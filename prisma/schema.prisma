@@ -1,0 +1,84 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                    Int             @id @default(autoincrement())
+  email                 String          @unique
+  name                  String?
+  password              String
+  image                 String?
+  role                  Role            @default(operator)
+  hospital              Hospital        @relation(fields: [idHospital], references: [id])
+  idHospital            Int
+  createdAt             DateTime?       @default(now())
+  updatedAt             DateTime?       @updatedAt
+  MedicalRecordDoctor   MedicalRecord[] @relation(name: "user_doctor")
+  MedicalRecordOperator MedicalRecord[] @relation(name: "user_operator")
+}
+
+enum Role {
+  doctor
+  operator
+  admin
+}
+
+model Hospital {
+  id            Int             @id @default(autoincrement())
+  name          String
+  address       String
+  description   String
+  phone         String
+  image         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  User          User[]
+  MedicalRecord MedicalRecord[]
+}
+
+model Patient {
+  id            Int             @id @default(autoincrement())
+  nik           String          @unique
+  name          String
+  address       String
+  latitude      String
+  longitude     String
+  phone         String
+  image         String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  MedicalRecord MedicalRecord[]
+}
+
+model MedicalRecord {
+  id              Int              @id @default(autoincrement())
+  Patient         Patient          @relation(fields: [idPatient], references: [id])
+  idPatient       Int
+  image           String
+  diagnosisAI     DiagnosisResult  @default(normal)
+  diagnosisDoctor DiagnosisResult?
+  description     String
+  diagnosisTime   DateTime?
+  Doctor          User?            @relation(name: "user_doctor", fields: [idDoctor], references: [id])
+  idDoctor        Int?
+  Operator        User             @relation(name: "user_operator", fields: [idOperator], references: [id])
+  idOperator      Int
+  Hospital        Hospital         @relation(fields: [idHospital], references: [id])
+  idHospital      Int
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+enum DiagnosisResult {
+  normal
+  ischemic
+  hemorrhagic
+}
