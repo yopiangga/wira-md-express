@@ -32,6 +32,8 @@ export async function getMedicalRecords() {
 
       patient: medicalRecord.Patient.name,
       nikPatient: medicalRecord.Patient.nik,
+      latitude: medicalRecord.Patient.latitude,
+      longitude: medicalRecord.Patient.longitude,
       doctor: medicalRecord.Doctor?.name,
       operator: medicalRecord.Operator.name,
       hospital: medicalRecord.Hospital.name,
@@ -83,6 +85,8 @@ export async function getMedicalRecordById(id: number) {
 
     patient: medicalRecord.Patient.name,
     nikPatient: medicalRecord.Patient.nik,
+    latitude: medicalRecord.Patient.latitude,
+    longitude: medicalRecord.Patient.longitude,
     doctor: medicalRecord.Doctor?.name,
     operator: medicalRecord.Operator.name,
     hospital: medicalRecord.Hospital.name,
