@@ -3,10 +3,12 @@ import { Request, Response, NextFunction } from "express";
 import * as medicalRecordServices from "../services/medicalRecordServices";
 import { JWTRequest, jwtAuthMiddleware } from "../middleware/jwtAuth";
 import * as userServices from "../services/userServices";
+import * as usersServices from "../services/usersServices";
 import multer from "multer";
 import fs from "fs";
 import axios from "axios";
 import { config } from "../config";
+import { SMTP_USER, mailTransporter } from "../utils/MailService";
 
 export const router = express.Router();
 
@@ -99,6 +101,46 @@ router.post(
 
     const resUser = await userServices.myProfile(parseInt(idOperator));
     const idHospital = resUser.idHospital;
+
+    // get users doctor
+    const resDoctor = await usersServices.getUsers();
+    const doctors = resDoctor.filter((user) => user.role === "doctor" && user.idHospital === idHospital);
+
+    if (doctors.length === 0) {
+      res.status(400).json({
+        message: "There is no doctor in this hospital",
+      });
+    }
+
+    const html = `
+      <p>Dear Doctor,</p>
+      <p>There is a new medical record that needs to be diagnosed. Please check the medical record in the application.</p>
+      <p>Thank you.</p>
+
+      <p>Patient ID: ${idPatient}</p>
+      <p>Description: ${description}</p>
+
+      <p>Best Regards,</p>
+      <p>Medical Record Application</p>
+    `
+
+    doctors.map((doctor) => {
+      const mailData = {
+        from: SMTP_USER,
+        to: doctor.email,
+        subject: "New Medical Record - Diagnosis",
+        html: html,
+      };
+
+      mailTransporter.sendMail(mailData, (err, info) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("Email sent: " + info.response);
+        }
+      
+      });
+    })
 
     const image = req.file;
     const nameImage = new Date().getTime() + "_" + idPatient;

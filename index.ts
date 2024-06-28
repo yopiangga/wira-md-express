@@ -13,6 +13,7 @@ import { router as statisticRoutes } from "./routes/statisticRoutes";
 import { config } from "./config";
 import multer from "multer";
 import fs from "fs";
+import { mailTransporter } from "./utils/MailService";
 
 dotenv.config();
 
