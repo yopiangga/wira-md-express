@@ -76,6 +76,50 @@ router.get(
   }
 );
 
+router.get(
+  "/distance/:latitude/:longitude",
+  jwtAuthMiddleware,
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { latitude, longitude } = req.params;
+
+    try {
+      const medicalRecords = await medicalRecordServices.getMedicalRecords();
+
+      const temp = medicalRecords.map((medicalRecord) => {
+        return {
+          id: medicalRecord.id,
+          idPatient: medicalRecord.idPatient,
+          distance: calculateDistance({
+            lat1: parseFloat(latitude),
+            lon1: parseFloat(longitude),
+            lat2: parseFloat(medicalRecord.latitude),
+            lon2: parseFloat(medicalRecord.longitude),
+          }),
+          diagnoseByAI: medicalRecord.diagnosisAI,
+          diagnoseByDoctor: medicalRecord.diagnosisDoctor,
+        };
+      });
+
+      const tempFilteredDiagnosticDocterNotNull = temp.filter(
+        (item) => item.diagnoseByDoctor != null
+      );
+      const tempFilterIdPatientUnique =
+        tempFilteredDiagnosticDocterNotNull.filter((item, index, self) => {
+          return (
+            index === self.findIndex((t) => t.idPatient === item.idPatient)
+          );
+        });
+
+      res.json({
+        message: "Success",
+        data: tempFilterIdPatientUnique,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+);
+
 router.get("/patient/:id", jwtAuthMiddleware, async (req, res, next) => {
   const { id } = req.params;
 
@@ -104,7 +148,9 @@ router.post(
 
     // get users doctor
     const resDoctor = await usersServices.getUsers();
-    const doctors = resDoctor.filter((user) => user.role === "doctor" && user.idHospital === idHospital);
+    const doctors = resDoctor.filter(
+      (user) => user.role === "doctor" && user.idHospital === idHospital
+    );
 
     if (doctors.length === 0) {
       res.status(400).json({
@@ -122,7 +168,7 @@ router.post(
 
       <p>Best Regards,</p>
       <p>Medical Record Application</p>
-    `
+    `;
 
     doctors.map((doctor) => {
       const mailData = {
@@ -138,9 +184,8 @@ router.post(
         } else {
           console.log("Email sent: " + info.response);
         }
-      
       });
-    })
+    });
 
     const image = req.file;
     const nameImage = new Date().getTime() + "_" + idPatient;
@@ -218,12 +263,12 @@ router.put(
           },
         }
       );
-  
+
       const diagnosisAI = resFile.data;
-  
+
       const filePath = config.path + "/uploads/medical-record/dcm/" + nameImage;
       fs.writeFileSync(filePath, imageBuffer);
-  
+
       try {
         const medicalRecords = await medicalRecordServices.updateMedicalRecord(
           parseInt(id),
@@ -231,7 +276,7 @@ router.put(
           description,
           diagnosisAI
         );
-  
+
         res.json({
           message: "Success",
           data: medicalRecords,
@@ -287,8 +332,17 @@ router.delete("/:id", jwtAuthMiddleware, async (req, res, next) => {
   }
 });
 
-
-function calculateDistance({lat1, lon1, lat2, lon2}: {lat1: number, lon1: number, lat2: number, lon2: number}) {
+function calculateDistance({
+  lat1,
+  lon1,
+  lat2,
+  lon2,
+}: {
+  lat1: number;
+  lon1: number;
+  lat2: number;
+  lon2: number;
+}) {
   const lat1Rad = lat1 * (Math.PI / 180);
   const lat2Rad = lat2 * (Math.PI / 180);
   const lon1Rad = lon1 * (Math.PI / 180);
@@ -299,9 +353,12 @@ function calculateDistance({lat1, lon1, lat2, lon2}: {lat1: number, lon1: number
   const dLat = lat2Rad - lat1Rad;
   const dLon = lon2Rad - lon1Rad;
 
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-            Math.cos(lat1Rad) * Math.cos(lat2Rad) *
-            Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1Rad) *
+      Math.cos(lat2Rad) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 

@@ -14,7 +14,10 @@ export async function getMedicalRecords() {
 
   const tempMedicalRecords = medicalRecords.map((medicalRecord) => {
     let imagePath =
-      config.baseUrl + "/uploads/medical-record/jpg/" + medicalRecord.image + ".jpg";
+      config.baseUrl +
+      "/uploads/medical-record/jpg/" +
+      medicalRecord.image +
+      ".jpg";
     medicalRecord.image = imagePath;
 
     const tempMedicalRecord = {
@@ -29,6 +32,7 @@ export async function getMedicalRecords() {
       idHospital: medicalRecord.idHospital,
       createdAt: medicalRecord.createdAt,
       updatedAt: medicalRecord.updatedAt,
+      diagnosisTime: medicalRecord.diagnosisTime,
 
       patient: medicalRecord.Patient.name,
       nikPatient: medicalRecord.Patient.nik,
@@ -63,10 +67,18 @@ export async function getMedicalRecordById(id: number) {
   }
 
   let imagePath =
-    config.baseUrl + "/uploads/medical-record/" + "jpg/" + medicalRecord.image + ".jpg";
-    
-  let imagePath2 = config.baseUrl + "/uploads/medical-record/segmented/" + medicalRecord.image + ".jpg";
-    
+    config.baseUrl +
+    "/uploads/medical-record/" +
+    "jpg/" +
+    medicalRecord.image +
+    ".jpg";
+
+  let imagePath2 =
+    config.baseUrl +
+    "/uploads/medical-record/segmented/" +
+    medicalRecord.image +
+    ".jpg";
+
   medicalRecord.image = imagePath;
 
   const tempMedicalRecord = {
@@ -110,7 +122,10 @@ export async function getMedicalRecordsByPatientId(id: number) {
 
   const tempMedicalRecords = medicalRecords.map((medicalRecord) => {
     let imagePath =
-      config.baseUrl + "/uploads/medical-record/jpg/" + medicalRecord.image + ".jpg";
+      config.baseUrl +
+      "/uploads/medical-record/jpg/" +
+      medicalRecord.image +
+      ".jpg";
     medicalRecord.image = imagePath;
 
     const tempMedicalRecord = {
